@@ -1,9 +1,13 @@
 # HIPAA Data Governance Documentation
 
 **Project:** FUM Follow-Up Failure Risk Stratification Model
+
 **Organization:** LA County Department of Mental Health (LACDMH) — Prototype
+
 **Data Classification:** Synthetic / De-identified
+
 **Last Updated:** 2026-08-18
+
 **Author:** Sichen Zhong
 
 ---
