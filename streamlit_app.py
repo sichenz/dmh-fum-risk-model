@@ -1,7 +1,7 @@
 """
 streamlit_app.py
 ----------------
-Self-initializing Streamlit dashboard for the LACDMH FUM Follow-Up Failure
+Self-initializing Streamlit dashboard for the LA County FUM Follow-Up Failure
 Risk Stratification Model.
 
 This file is the Streamlit Cloud entry point. On first load it automatically:
@@ -9,7 +9,7 @@ This file is the Streamlit Cloud entry point. On first load it automatically:
   2. Applies HIPAA Safe Harbor de-identification (45 CFR §164.514(b)(2))
   3. Engineers clinical + SDoH + geographic features
   4. Trains Logistic Regression + XGBoost with SHAP explainability
-  5. Runs a demographic equity audit (LACDMH ARDI framework)
+  5. Runs a demographic equity audit (LA County ARDI framework)
 
 The full pipeline completes in ~5 seconds and is cached for the session.
 No data files need to be pre-committed to the repository.
@@ -18,7 +18,7 @@ Deploy to Streamlit Community Cloud:
   Main file: streamlit_app.py
   Python version: 3.11
 
-Portfolio project for LACDMH Data Scientist Supervisor (Exam b1765A).
+Portfolio project for LA County behavioral health analytics.
 """
 
 import os
@@ -44,14 +44,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 # ──────────────────────────────────────────────────────────────────────────────
 
 st.set_page_config(
-    page_title="LACDMH FUM Risk Model",
+    page_title="LA County FUM Risk Model",
     page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
         "Get help": "https://github.com/sichenz/dmh-fum-risk-model",
         "Report a bug": "https://github.com/sichenz/dmh-fum-risk-model/issues",
-        "About": "Portfolio project for LACDMH Data Scientist Supervisor (Exam b1765A). Synthetic data only.",
+        "About": "Portfolio project for LA County behavioral health analytics. Synthetic data only.",
     },
 )
 
@@ -61,30 +61,132 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    .main-header {
-        background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
-        padding: 1.5rem 2rem;
-        border-radius: 12px;
-        margin-bottom: 1.2rem;
-        color: white;
-    }
-    .main-header h1 { font-size: 1.5rem; font-weight: 700; margin: 0; }
-    .main-header p  { font-size: 0.82rem; opacity: 0.8; margin: 0.3rem 0 0; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-    .hipaa-badge {
-        background: #f0fdf4; border: 1px solid #86efac; border-radius: 6px;
-        padding: 0.35rem 0.75rem; font-size: 0.75rem; color: #15803d;
-        display: inline-block; margin-bottom: 1rem;
+    :root {
+        --accent: #0071E3;
+        --accent-dark: #0a58c2;
+        --accent-tint: #eaf3ff;
+        --ink: #10182c;
+        --ink-soft: #5b6478;
+        --line: #e7eaf2;
+        --canvas: #f6f7fb;
+        --success: #0f9d58;
+        --warn: #b45309;
+        --danger: #d93025;
     }
+
+    html, body, [class*="css"], [data-testid="stAppViewContainer"] {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--ink);
+    }
+
+    [data-testid="stAppViewContainer"] > .main { background: var(--canvas); }
+    [data-testid="stHeader"] { background: transparent; }
+    .block-container { padding-top: 1.6rem; padding-bottom: 3rem; max-width: 1180px; }
+
+    h1, h2, h3, h4 { font-weight: 700 !important; letter-spacing: -0.01em; color: var(--ink); }
+
+    /* ---------- Hero ---------- */
+    .hero {
+        position: relative;
+        overflow: hidden;
+        background: radial-gradient(120% 160% at 0% 0%, #16305e 0%, #0b1f42 45%, #071634 100%);
+        padding: 2.6rem 2.8rem;
+        border-radius: 22px;
+        margin-bottom: 1.1rem;
+        color: white;
+        box-shadow: 0 18px 40px -18px rgba(11, 31, 66, 0.55);
+    }
+    .hero::after {
+        content: "";
+        position: absolute; inset: 0;
+        background: radial-gradient(50% 90% at 100% 0%, rgba(0,113,227,0.35), transparent 60%);
+        pointer-events: none;
+    }
+    .hero-eyebrow {
+        display: inline-flex; align-items: center; gap: 0.4rem;
+        font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+        color: #bcd4ff; background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.16);
+        padding: 0.28rem 0.7rem; border-radius: 999px; margin-bottom: 0.9rem;
+    }
+    .hero h1 {
+        font-size: 2.05rem; font-weight: 800; margin: 0; color: white !important;
+        letter-spacing: -0.02em; line-height: 1.15; max-width: 40rem;
+    }
+    .hero p {
+        font-size: 0.98rem; color: rgba(255,255,255,0.72); margin: 0.65rem 0 0;
+        max-width: 34rem; line-height: 1.5;
+    }
+
+    /* ---------- Pill badges ---------- */
+    .badge-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1.3rem 0 1.4rem; }
+    .pill {
+        display: inline-flex; align-items: center; gap: 0.4rem;
+        font-size: 0.76rem; font-weight: 600;
+        padding: 0.36rem 0.8rem; border-radius: 999px;
+        border: 1px solid var(--line); background: white; color: var(--ink-soft);
+    }
+    .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+    .pill.pill-accent { background: var(--accent-tint); border-color: #cfe3ff; color: var(--accent-dark); }
+
+    /* ---------- Section headers ---------- */
     .section-header {
-        font-size: 0.95rem; font-weight: 600; color: #1e293b;
-        border-bottom: 2px solid #2563eb; padding-bottom: 0.35rem; margin-bottom: 1rem;
+        font-size: 1.02rem; font-weight: 700; color: var(--ink);
+        padding-bottom: 0.6rem; margin: 0.4rem 0 1.1rem;
+        border-bottom: 1px solid var(--line);
     }
+    .section-eyebrow {
+        font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+        color: var(--accent); margin-bottom: 0.25rem; display: block;
+    }
+
+    /* ---------- Cards / metrics ---------- */
     div[data-testid="stMetric"] {
-        background-color: #f8fafc; border: 1px solid #e2e8f0;
-        border-radius: 8px; padding: 0.7rem;
+        background-color: white; border: 1px solid var(--line);
+        border-radius: 14px; padding: 1rem 1.1rem;
+        box-shadow: 0 1px 2px rgba(16, 24, 44, 0.04);
     }
-    .stAlert { font-size: 0.85rem; }
+    div[data-testid="stMetric"] label { color: var(--ink-soft) !important; font-weight: 600 !important; }
+    div[data-testid="stMetricValue"] { color: var(--ink) !important; font-weight: 800 !important; }
+
+    /* ---------- Sidebar ---------- */
+    section[data-testid="stSidebar"] {
+        background: white; border-right: 1px solid var(--line);
+    }
+    section[data-testid="stSidebar"] .stRadio label {
+        font-size: 0.88rem;
+    }
+    .sidebar-brand {
+        display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.1rem;
+    }
+    .sidebar-brand .mark {
+        width: 34px; height: 34px; border-radius: 10px;
+        background: linear-gradient(135deg, #0071E3, #16305e);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.05rem; flex-shrink: 0;
+    }
+    .sidebar-brand .name { font-weight: 800; font-size: 0.98rem; line-height: 1.15; color: var(--ink); }
+    .sidebar-brand .sub { font-size: 0.72rem; color: var(--ink-soft); }
+
+    /* ---------- General polish ---------- */
+    .stAlert { font-size: 0.85rem; border-radius: 12px; }
+    div[data-testid="stExpander"] {
+        border: 1px solid var(--line); border-radius: 14px; background: white;
+    }
+    div[data-testid="stDataFrame"] { border-radius: 12px; overflow: hidden; border: 1px solid var(--line); }
+    .stDownloadButton button, .stButton button {
+        border-radius: 999px !important; font-weight: 600 !important;
+        border: 1px solid var(--accent) !important;
+    }
+    .stDownloadButton button {
+        background: var(--accent) !important; color: white !important;
+    }
+    hr { border-color: var(--line) !important; }
+    div[data-testid="stVerticalBlockBorderWrapper"] {
+        border-radius: 14px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -158,18 +260,23 @@ def run_pipeline():
 # ──────────────────────────────────────────────────────────────────────────────
 
 st.markdown("""
-<div class="main-header">
-    <h1>🧠 LACDMH — FUM Follow-Up Risk Stratification Dashboard</h1>
-    <p>Mental Health ED Post-Crisis Follow-Up Failure Prediction &nbsp;|&nbsp;
-       Portfolio Prototype &nbsp;|&nbsp; Synthetic Data Only</p>
+<div class="hero">
+    <span class="hero-eyebrow">🧠 &nbsp;LA County · Behavioral Health Analytics</span>
+    <h1>FUM Follow-Up Risk Stratification Dashboard</h1>
+    <p>Predicting which patients are likely to miss their post-crisis follow-up
+       after a mental-health emergency department visit — so outreach teams can
+       reach them first.</p>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown(
-    '<div class="hipaa-badge">🔒 De-identified — HIPAA Safe Harbor (45 CFR §164.514(b)) '
-    '| All data is synthetic | No real patients</div>',
-    unsafe_allow_html=True,
-)
+st.markdown("""
+<div class="badge-row">
+    <span class="pill pill-accent"><span class="pill-dot"></span> HIPAA Safe Harbor de-identified</span>
+    <span class="pill">🔒 45 CFR §164.514(b)</span>
+    <span class="pill">🧪 Synthetic data only — no real patients</span>
+    <span class="pill">Portfolio prototype</span>
+</div>
+""", unsafe_allow_html=True)
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Auto-initialize with spinner
@@ -203,8 +310,15 @@ summaries    = pipeline["summaries"]
 # ──────────────────────────────────────────────────────────────────────────────
 
 with st.sidebar:
-    st.markdown("### 🧠 LACDMH FUM Model")
-    st.caption("Portfolio — Exam b1765A")
+    st.markdown("""
+    <div class="sidebar-brand">
+        <div class="mark">🧠</div>
+        <div>
+            <div class="name">LA County FUM Model</div>
+            <div class="sub">Portfolio Prototype</div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     st.markdown("---")
 
     page = st.radio(
@@ -231,7 +345,7 @@ with st.sidebar:
     st.markdown("**HEDIS FUM Measure**")
     st.caption(
         "7-day follow-up after ED visit for mental illness. "
-        "Active PIP in LACDMH QAPI Work Plan 2025–2026."
+        "Active PIP in LA County QAPI Work Plan 2025–2026."
     )
 
     elapsed = pipeline.get("elapsed", 0)
@@ -417,11 +531,11 @@ elif page == "🎯 Outreach List":
 # ──────────────────────────────────────────────────────────────────────────────
 
 elif page == "⚖️ Equity Audit":
-    st.markdown('<div class="section-header">Model Equity Audit — LACDMH ARDI Framework</div>',
+    st.markdown('<div class="section-header">Model Equity Audit — LA County ARDI Framework</div>',
                 unsafe_allow_html=True)
     st.caption(
         "Evaluates whether model performance is equitable across demographic subgroups, "
-        "aligned with LACDMH's Anti-Racism, Diversity, and Inclusion (ARDI) Strategic Plan."
+        "aligned with LA County's Anti-Racism, Diversity, and Inclusion (ARDI) Strategic Plan."
     )
 
     attr_labels = {
@@ -487,7 +601,7 @@ elif page == "⚖️ Equity Audit":
 >
 > In a production context, these results would trigger: (1) subgroup-specific model
 > recalibration, (2) targeted feature engineering to reduce disparity (e.g., adding
-> language-concordant care access features), and (3) a formal review with LACDMH's
+> language-concordant care access features), and (3) a formal review with LA County's
 > ARDI leadership before any deployment decision.
 """)
     else:
@@ -588,9 +702,9 @@ elif page == "🔒 HIPAA Governance":
 - ✅ SHAP explainability available for clinical decision support audit
 - ✅ All data is **synthetic** — no real patient data
 - ✅ Access control design documented
-- ⚠️ **Production deployment requires:** IRB determination, DUA, Privacy Officer sign-off, LACDMH IT security review
+- ⚠️ **Production deployment requires:** IRB determination, DUA, Privacy Officer sign-off, LA County IT security review
 
-> **HIPAA Note:** If deployed with real LACDMH data, this analytics pipeline would constitute a
+> **HIPAA Note:** If deployed with real LA County data, this analytics pipeline would constitute a
 > Healthcare Operations (QAPI) use of PHI, permissible under 45 CFR §164.501 without patient
 > authorization — provided the required safeguards documented in `HIPAA_GOVERNANCE.md` are in place.
 """)
@@ -610,7 +724,7 @@ elif page == "📋 About This Project":
 **Predicting Post-Crisis Follow-Up Failure in a Mental Health Population: A HIPAA-Compliant ML Pipeline**
 
 This is a portfolio project built to demonstrate healthcare data science experience for the
-**LA County Department of Mental Health Data Scientist Supervisor** position (Exam b1765A).
+**LA County** behavioral health data science initiative.
 
 ---
 
@@ -618,7 +732,7 @@ This is a portfolio project built to demonstrate healthcare data science experie
 
 The **HEDIS FUM (Follow-Up After Emergency Department Visit for Mental Illness)** measure
 tracks whether patients receive outpatient follow-up within 7 or 30 days after a psychiatric
-ED visit. LACDMH runs this as a named **Performance Improvement Project (PIP)** in their
+ED visit. LA County runs this as a named **Performance Improvement Project (PIP)** in their
 2025–2026 QAPI Work Plan.
 
 Low FUM rates = real people falling through the cracks. This model identifies who is at
@@ -634,13 +748,13 @@ highest risk of missing that follow-up — enabling proactive outreach.
 | 2 | `deidentification.py` | HIPAA Safe Harbor de-identification (45 CFR §164.514(b)(2)) |
 | 3 | `features.py` | 25+ clinical, SDoH, and geographic features |
 | 4 | `model.py` | XGBoost + SHAP explainability + calibration |
-| 5 | `fairness.py` | Demographic equity audit (LACDMH ARDI framework) |
+| 5 | `fairness.py` | Demographic equity audit (LA County ARDI framework) |
 
 ---
 
-### Alignment with Active LACDMH Initiatives
+### Alignment with Active LA County Initiatives
 
-| LACDMH Initiative | How This Project Connects |
+| LA County Initiative | How This Project Connects |
 |---|---|
 | FUM Performance Improvement Project (QAPI 2025–2026) | Directly models this HEDIS measure |
 | Homelessness Prevention Unit predictive analytics (CA Policy Lab) | Same multi-factor risk stratification approach |
@@ -654,7 +768,7 @@ highest risk of missing that follow-up — enabling proactive outreach.
 ### Key Technical Decisions
 
 - **XGBoost over deep learning:** Tabular clinical data + need for exact SHAP explanations
-- **HIPAA Safe Harbor over Expert Determination:** Standard method for LACDMH data partners (InfoHub, CalAIM, IBHIS)
+- **HIPAA Safe Harbor over Expert Determination:** Standard method for LA County data partners (InfoHub, CalAIM, IBHIS)
 - **PR-AUC as primary metric:** Accounts for class imbalance (~66% failure rate)
 - **Fairness audit independent of explainability:** SHAP can mask bias; fairness is evaluated on its own terms
 - **Shallow trees (max_depth=4):** More interpretable SHAP values for clinical staff
@@ -671,7 +785,7 @@ All source code is available on GitHub. The full pipeline runs automatically on 
     st.info(
         "**Note:** This prototype uses entirely synthetic data. "
         "No real patient data was used at any stage. "
-        "All demographic distributions are modeled on publicly available LACDMH reports."
+        "All demographic distributions are modeled on publicly available LA County reports."
     )
 
 
@@ -684,6 +798,6 @@ st.caption(
     "**Prototype — Portfolio / Research Use Only** | "
     "Synthetic data generated with Synthea-equivalent methodology | "
     "Not for clinical deployment without IRB approval, Privacy Officer sign-off, "
-    "and LACDMH IT Security review | "
-    "LACDMH Data Scientist Supervisor — Exam b1765A"
+    "and LA County IT Security review | "
+    "LA County Behavioral Health Analytics"
 )

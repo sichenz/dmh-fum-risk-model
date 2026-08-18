@@ -29,9 +29,9 @@ Reference: HHS Office for Civil Rights — Guidance Regarding Methods for
 De-identification of PHI in Accordance with HIPAA Privacy Rule (2012)
 https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/
 
-LACDMH Context: This pipeline mirrors the data governance practices
+LA County Context: This pipeline mirrors the data governance practices
 required for IBHIS (Integrated Behavioral Health Information System)
-data used in cross-departmental analytics, as described in LACDMH's
+data used in cross-departmental analytics, as described in LA County's
 Chief Information Office Bureau data management policies.
 """
 
@@ -69,7 +69,7 @@ PHI_TRANSFORM_COLS = {
 }
 
 
-def _hash_token(value: str, salt: str = "LACDMH-DEIDENT-2026") -> str:
+def _hash_token(value: str, salt: str = "LA County-DEIDENT-2026") -> str:
     """
     One-way SHA-256 hash of an identifier for pseudonymization.
     Allows within-dataset linkage without exposing the original value.

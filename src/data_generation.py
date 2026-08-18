@@ -2,7 +2,7 @@
 data_generation.py
 ------------------
 Generates a synthetic behavioral health patient cohort modeled after the
-clinical population served by LA County Department of Mental Health (LACDMH).
+clinical population served by LA County.
 
 The synthetic data is designed to reflect:
   - ICD-10 F-code mental health diagnoses (F20–F99)
@@ -33,7 +33,7 @@ import hashlib
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Configuration — LA County population parameters
-# Distributions drawn from LACDMH published demographics reports and
+# Distributions drawn from LA County published demographics reports and
 # LA County American Human Development Index (2026 Portrait report)
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -43,7 +43,7 @@ random.seed(SEED)
 fake = Faker("en_US")
 Faker.seed(SEED)
 
-# ICD-10 F-code mental health diagnoses used in LACDMH / HEDIS FUM measure
+# ICD-10 F-code mental health diagnoses used in LA County / HEDIS FUM measure
 DIAGNOSIS_CODES = {
     "Schizophrenia Spectrum": {
         "codes": ["F20.0", "F20.1", "F20.2", "F20.3", "F20.5", "F20.9",
@@ -177,7 +177,7 @@ def _compute_followup_failure(
 
     This encodes known clinical and social determinants of health (SDoH)
     risk factors from the mental health readmission literature and
-    LACDMH's own barrier analyses.
+    LA County's own barrier analyses.
     """
     log_odds = -1.2  # baseline (30% base failure rate)
 
@@ -224,7 +224,7 @@ def _compute_followup_failure(
         log_odds += 0.15  # older adults with mobility / transportation barriers
 
     # ── Race/ethnicity equity signal ─────────────────────────────────────
-    # NOTE: This encodes systemic inequities documented in LACDMH outcomes
+    # NOTE: This encodes systemic inequities documented in LA County outcomes
     # data. Model fairness audits will specifically test and flag these.
     if race_ethnicity == "Black/African American":
         log_odds += 0.25  # documented disparity in follow-up completion
@@ -323,7 +323,7 @@ def generate_patient_cohort(n_patients: int = 5000, as_of_date: str = "2026-01-0
                 DIAGNOSIS_CODES[random.choice(other_cats)]["codes"]
             )
 
-        # SUD comorbidity (separate flag — important LACDMH BHSA metric)
+        # SUD comorbidity (separate flag — important LA County BHSA metric)
         sud_comorbidity = np.random.binomial(
             1, 0.38 if diag_cat != "Substance Use Disorder with MH Comorbidity" else 1.0
         )

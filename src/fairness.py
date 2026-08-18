@@ -3,7 +3,7 @@ fairness.py
 -----------
 Demographic equity audit for the FUM Follow-Up Failure prediction model.
 
-LACDMH is explicitly committed to Anti-Racism, Diversity, and Inclusion
+LA County is explicitly committed to Anti-Racism, Diversity, and Inclusion
 (ARDI) in its data science work. This audit tests whether the predictive
 model performs equitably across demographic subgroups defined by:
   - Race/ethnicity
@@ -20,7 +20,7 @@ Metrics computed per group:
   - Demographic Parity Difference: max gap in positive prediction rates
 
 Fairlearn reference: https://fairlearn.org/
-ARDI context: LACDMH Strategic Plan 2020-2030, Section 4 (Equity)
+ARDI context: LA County Strategic Plan 2020-2030, Section 4 (Equity)
 """
 
 import numpy as np
@@ -185,7 +185,7 @@ def plot_group_performance(
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
     fig.suptitle(
         f"Model Equity Audit — Disaggregated by {attribute_name}\n"
-        f"(LACDMH ARDI Framework — Anti-Racism, Diversity, and Inclusion)",
+        f"(LA County ARDI Framework — Anti-Racism, Diversity, and Inclusion)",
         fontsize=13, fontweight="bold", y=1.01
     )
 
@@ -252,7 +252,7 @@ def plot_fairness_radar(summaries: dict, save_path: str = None):
             text = cell.get_text().get_text()
             cell.set_facecolor("#D1FAE5" if text == "✓" else "#FEE2E2")
 
-    plt.title("Fairness Audit Summary — FUM Model\n(LACDMH ARDI Equity Evaluation)",
+    plt.title("Fairness Audit Summary — FUM Model\n(LA County ARDI Equity Evaluation)",
                fontsize=12, fontweight="bold", pad=20)
     plt.tight_layout()
     if save_path:

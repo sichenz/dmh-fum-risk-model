@@ -18,7 +18,7 @@ This document lays out the data governance policies, HIPAA compliance controls, 
 
 To be clear up front: this is a **prototype** built entirely on synthetic data. Nothing here has touched a real patient record. I wrote it this way anyway because I wanted to show how I'd actually think through governance before a model like this ever got near production — not bolt it on afterward.
 
-> **HIPAA applicability:** If this were deployed with real LACDMH patient data, using it this way would fall under Quality Assessment and Performance Improvement (QAPI) activities, which 45 CFR §164.501 treats as a permitted Healthcare Operations use — meaning it wouldn't require individual patient authorization, as long as the right safeguards are in place.
+> **HIPAA applicability:** If this were deployed with real LA County patient data, using it this way would fall under Quality Assessment and Performance Improvement (QAPI) activities, which 45 CFR §164.501 treats as a permitted Healthcare Operations use — meaning it wouldn't require individual patient authorization, as long as the right safeguards are in place.
 
 ---
 
@@ -92,7 +92,7 @@ None of these are implemented in this prototype — they're a checklist of what 
 - [ ] Network-level controls — VPN required for data access
 - [ ] Row-level security at the database layer for multi-department access
 - [ ] Model inference API sitting behind an authentication layer
-- [ ] Dashboard gated behind LACDMH SSO
+- [ ] Dashboard gated behind LA County SSO
 
 ---
 
@@ -111,7 +111,7 @@ It's not a black-box model making autonomous clinical calls, but it's also not a
 ### 5.2 What I'd want checked before this goes live
 
 - [ ] **Fairness audit** passes across all demographic groups (`src/fairness.py`)
-- [ ] **Clinical validation** from LACDMH clinical leadership
+- [ ] **Clinical validation** from LA County clinical leadership
 - [ ] **IRB determination** — the QAPI exception probably applies, but that's not a call I'd make unilaterally
 - [ ] **Privacy Officer sign-off** on the de-identification approach
 - [ ] **IT Security review**
@@ -155,7 +155,7 @@ None of these are hypothetical concerns unique to this project — they're the s
 
 ### 6.2 Fairness thresholds
 
-Based on the broader fairness literature and LACDMH's own ARDI commitments, here's where I'd set the bar:
+Based on the broader fairness literature and LA County's own ARDI commitments, here's where I'd set the bar:
 
 | Metric | Acceptable threshold |
 |---|---|
@@ -171,7 +171,7 @@ Worth noting: the synthetic data in this prototype is intentionally built with s
 
 If a breach or unauthorized access ever happened, here's the sequence I'd follow:
 
-1. Notify the LACDMH Privacy Officer and IT Security **immediately** — not after triage, not after confirming severity.
+1. Notify the LA County Privacy Officer and IT Security **immediately** — not after triage, not after confirming severity.
 2. Document what happened: the nature, scope, and timing of the incident.
 3. If real PHI turns out to be involved, this triggers the HIPAA Breach Notification Rule (45 CFR §164.400):
    - Affected individuals notified within 60 days
@@ -187,7 +187,7 @@ If a breach or unauthorized access ever happened, here's the sequence I'd follow
 Any change to the model, the data pipeline, or the de-identification logic should go through the same basic discipline:
 
 - Tracked with version history in Git
-- Reviewed by the Data Scientist Supervisor before merging
+- Reviewed by the data science lead before merging
 - Re-checked for fairness impact if it touches feature engineering
 - Signed off by the Privacy Officer if it touches de-identification logic specifically
 
@@ -197,7 +197,7 @@ Any change to the model, the data pipeline, or the de-identification logic shoul
 
 - HHS. *Guidance Regarding Methods for De-identification of PHI in Accordance with HIPAA.* (2012). https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/
 - NCQA. *HEDIS FUM Measure Specification.* (2025).
-- LACDMH. *QAPI Work Plan 2025-2026.* LA County Department of Mental Health.
-- LACDMH. *Anti-Racism, Diversity, and Inclusion (ARDI) Strategic Plan.* LA County Department of Mental Health.
+- LA County. *QAPI Work Plan 2025-2026.* LA County.
+- LA County. *Anti-Racism, Diversity, and Inclusion (ARDI) Strategic Plan.* LA County.
 - Fairlearn. *Fairness Assessment for Machine Learning Systems.* https://fairlearn.org/
 - Bird et al. *Fairlearn: A toolkit for assessing and improving fairness in AI.* (2020). Microsoft Research.

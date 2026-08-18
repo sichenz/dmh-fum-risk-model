@@ -8,7 +8,7 @@ Derives clinically meaningful predictors from the de-identified patient
 dataset. Feature design is grounded in:
 
   1. HEDIS FUM measure specifications (NCQA)
-  2. LACDMH barrier analysis documentation (QAPI Work Plan 2025-2026)
+  2. LA County barrier analysis documentation (QAPI Work Plan 2025-2026)
   3. Mental health readmission prediction literature
      (e.g., MIMIC-IV cohort studies, HCUP NRD analyses)
 

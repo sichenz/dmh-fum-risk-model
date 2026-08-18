@@ -1,7 +1,7 @@
 """
 app.py — Streamlit Dashboard
 ----------------------------
-Interactive operational dashboard for the LACDMH FUM Follow-Up Failure
+Interactive operational dashboard for the LA County FUM Follow-Up Failure
 Risk Stratification Model.
 
 Features:
@@ -33,7 +33,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 # ──────────────────────────────────────────────────────────────────────────────
 
 st.set_page_config(
-    page_title="LACDMH FUM Risk Model — Outreach Dashboard",
+    page_title="LA County FUM Risk Model — Outreach Dashboard",
     page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -45,85 +45,116 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-    html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif;
+    :root {
+        --accent: #0071E3;
+        --accent-dark: #0a58c2;
+        --accent-tint: #eaf3ff;
+        --ink: #10182c;
+        --ink-soft: #5b6478;
+        --line: #e7eaf2;
+        --canvas: #f6f7fb;
+        --success: #0f9d58;
+        --warn: #b45309;
+        --danger: #d93025;
     }
 
-    .main-header {
-        background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
-        padding: 1.5rem 2rem;
-        border-radius: 12px;
-        margin-bottom: 1.5rem;
+    html, body, [class*="css"], [data-testid="stAppViewContainer"] {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--ink);
+    }
+
+    [data-testid="stAppViewContainer"] > .main { background: var(--canvas); }
+    [data-testid="stHeader"] { background: transparent; }
+    .block-container { padding-top: 1.6rem; padding-bottom: 3rem; max-width: 1180px; }
+
+    h1, h2, h3, h4 { font-weight: 700 !important; letter-spacing: -0.01em; color: var(--ink); }
+
+    .hero {
+        position: relative;
+        overflow: hidden;
+        background: radial-gradient(120% 160% at 0% 0%, #16305e 0%, #0b1f42 45%, #071634 100%);
+        padding: 2.6rem 2.8rem;
+        border-radius: 22px;
+        margin-bottom: 1.1rem;
         color: white;
+        box-shadow: 0 18px 40px -18px rgba(11, 31, 66, 0.55);
+    }
+    .hero::after {
+        content: "";
+        position: absolute; inset: 0;
+        background: radial-gradient(50% 90% at 100% 0%, rgba(0,113,227,0.35), transparent 60%);
+        pointer-events: none;
+    }
+    .hero-eyebrow {
+        display: inline-flex; align-items: center; gap: 0.4rem;
+        font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+        color: #bcd4ff; background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.16);
+        padding: 0.28rem 0.7rem; border-radius: 999px; margin-bottom: 0.9rem;
+    }
+    .hero h1 {
+        font-size: 2.05rem; font-weight: 800; margin: 0; color: white !important;
+        letter-spacing: -0.02em; line-height: 1.15; max-width: 40rem;
+    }
+    .hero p {
+        font-size: 0.98rem; color: rgba(255,255,255,0.72); margin: 0.65rem 0 0;
+        max-width: 34rem; line-height: 1.5;
     }
 
-    .main-header h1 {
-        font-size: 1.6rem;
-        font-weight: 700;
-        margin: 0;
-        letter-spacing: -0.02em;
+    .badge-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1.3rem 0 1.4rem; }
+    .pill {
+        display: inline-flex; align-items: center; gap: 0.4rem;
+        font-size: 0.76rem; font-weight: 600;
+        padding: 0.36rem 0.8rem; border-radius: 999px;
+        border: 1px solid var(--line); background: white; color: var(--ink-soft);
     }
-
-    .main-header p {
-        font-size: 0.85rem;
-        opacity: 0.8;
-        margin: 0.3rem 0 0 0;
-    }
+    .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+    .pill.pill-accent { background: var(--accent-tint); border-color: #cfe3ff; color: var(--accent-dark); }
 
     .metric-card {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
+        background: white;
+        border: 1px solid var(--line);
+        border-radius: 14px;
         padding: 1rem 1.2rem;
         text-align: center;
+        box-shadow: 0 1px 2px rgba(16, 24, 44, 0.04);
     }
-
-    .metric-card .value {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #1e3a5f;
-    }
-
+    .metric-card .value { font-size: 2rem; font-weight: 800; color: var(--ink); }
     .metric-card .label {
-        font-size: 0.75rem;
-        color: #64748b;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-top: 0.2rem;
+        font-size: 0.75rem; color: var(--ink-soft);
+        text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.2rem;
     }
 
-    .risk-high { color: #dc2626; font-weight: 600; }
-    .risk-moderate { color: #d97706; font-weight: 600; }
-    .risk-low { color: #059669; font-weight: 600; }
-
-    .hipaa-badge {
-        background: #f0fdf4;
-        border: 1px solid #86efac;
-        border-radius: 6px;
-        padding: 0.4rem 0.8rem;
-        font-size: 0.75rem;
-        color: #15803d;
-        display: inline-block;
-        margin-bottom: 1rem;
-    }
+    .risk-high { color: var(--danger); font-weight: 600; }
+    .risk-moderate { color: var(--warn); font-weight: 600; }
+    .risk-low { color: var(--success); font-weight: 600; }
 
     .section-header {
-        font-size: 1rem;
-        font-weight: 600;
-        color: #1e293b;
-        border-bottom: 2px solid #2563eb;
-        padding-bottom: 0.4rem;
-        margin-bottom: 1rem;
+        font-size: 1.02rem; font-weight: 700; color: var(--ink);
+        padding-bottom: 0.6rem; margin: 0.4rem 0 1.1rem;
+        border-bottom: 1px solid var(--line);
     }
 
     div[data-testid="stMetric"] {
-        background-color: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 0.8rem;
+        background-color: white; border: 1px solid var(--line);
+        border-radius: 14px; padding: 1rem 1.1rem;
+        box-shadow: 0 1px 2px rgba(16, 24, 44, 0.04);
     }
+    div[data-testid="stMetric"] label { color: var(--ink-soft) !important; font-weight: 600 !important; }
+    div[data-testid="stMetricValue"] { color: var(--ink) !important; font-weight: 800 !important; }
+
+    section[data-testid="stSidebar"] { background: white; border-right: 1px solid var(--line); }
+    .stAlert { font-size: 0.85rem; border-radius: 12px; }
+    div[data-testid="stExpander"] { border: 1px solid var(--line); border-radius: 14px; background: white; }
+    div[data-testid="stDataFrame"] { border-radius: 12px; overflow: hidden; border: 1px solid var(--line); }
+    .stDownloadButton button, .stButton button {
+        border-radius: 999px !important; font-weight: 600 !important;
+        border: 1px solid var(--accent) !important;
+    }
+    .stDownloadButton button { background: var(--accent) !important; color: white !important; }
+    hr { border-color: var(--line) !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -174,13 +205,21 @@ def check_pipeline_run():
 # ──────────────────────────────────────────────────────────────────────────────
 
 st.markdown("""
-<div class="main-header">
-    <h1>🧠 LACDMH — FUM Follow-Up Risk Stratification Dashboard</h1>
-    <p>Mental Health ED Post-Crisis Follow-Up Failure Prediction | Prototype — Synthetic Data Only</p>
+<div class="hero">
+    <span class="hero-eyebrow">🧠 &nbsp;LA County · Behavioral Health Analytics</span>
+    <h1>FUM Follow-Up Risk Stratification Dashboard</h1>
+    <p>Mental health ED post-crisis follow-up failure prediction —
+       operational outreach dashboard. Prototype, synthetic data only.</p>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="hipaa-badge">🔒 De-identified Data — HIPAA Safe Harbor (45 CFR §164.514(b)) | Synthetic Population Only</div>', unsafe_allow_html=True)
+st.markdown("""
+<div class="badge-row">
+    <span class="pill pill-accent"><span class="pill-dot"></span> HIPAA Safe Harbor de-identified</span>
+    <span class="pill">🔒 45 CFR §164.514(b)</span>
+    <span class="pill">🧪 Synthetic population only</span>
+</div>
+""", unsafe_allow_html=True)
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Gate: check if pipeline has been run
@@ -404,9 +443,9 @@ elif page == "🎯 Outreach List":
 # ──────────────────────────────────────────────────────────────────────────────
 
 elif page == "⚖️ Equity Audit":
-    st.markdown('<div class="section-header">Model Equity Audit — LACDMH ARDI Framework</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">Model Equity Audit — LA County ARDI Framework</div>', unsafe_allow_html=True)
     st.caption("Evaluates whether model performance is equitable across demographic subgroups, "
-               "aligned with LACDMH's Anti-Racism, Diversity, and Inclusion (ARDI) Strategic Plan.")
+               "aligned with LA County's Anti-Racism, Diversity, and Inclusion (ARDI) Strategic Plan.")
 
     attr_labels = {
         "race_ethnicity": "Race / Ethnicity",
@@ -564,6 +603,6 @@ st.markdown("---")
 st.caption(
     "**Prototype — Research and Portfolio Use Only** | "
     "Synthetic data generated with Synthea-equivalent methodology | "
-    "Not for clinical deployment without IRB approval, Privacy Officer sign-off, and LACDMH IT security review. | "
-    "Built to demonstrate HIPAA-aware data science for the LACDMH Data Scientist Supervisor role."
+    "Not for clinical deployment without IRB approval, Privacy Officer sign-off, and LA County IT security review. | "
+    "Built to demonstrate HIPAA-aware data science for LA County behavioral health operations."
 )

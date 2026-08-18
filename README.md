@@ -21,7 +21,7 @@ The first visit after the app wakes up takes a few seconds — it's generating a
 
 ## Why this project exists
 
-The **HEDIS FUM (Follow-Up After Emergency Department Visit for Mental Illness)** measure tracks whether someone who lands in the ED during a psychiatric crisis actually gets seen for outpatient follow-up within 7 or 30 days. LACDMH runs this as a named Performance Improvement Project in its 2025–2026 QAPI Work Plan, and for good reason: patients who fall through that gap are at a much higher risk of readmission, deterioration, and homelessness.
+The **HEDIS FUM (Follow-Up After Emergency Department Visit for Mental Illness)** measure tracks whether someone who lands in the ED during a psychiatric crisis actually gets seen for outpatient follow-up within 7 or 30 days. LA County runs this as a named Performance Improvement Project in its 2025–2026 QAPI Work Plan, and for good reason: patients who fall through that gap are at a much higher risk of readmission, deterioration, and homelessness.
 
 Most FUM improvement work focuses on the process for everyone. This project takes a more targeted angle — instead of treating every discharge the same way, it tries to predict *in advance* which patients are most likely to miss that follow-up, so limited outreach capacity gets pointed at the people who need it most.
 
@@ -86,7 +86,7 @@ streamlit run dashboard/app.py
 
 ### 1. Synthetic data generation (`src/data_generation.py`)
 
-This builds a fake but plausible LA County Medi-Cal behavioral health cohort — ICD-10 F-code diagnoses, ED visit history, discharge planning details, social determinants of health, all drawn from distributions roughly matched to LACDMH's published demographics. It deliberately includes PHI-equivalent fields (names, MRNs, dates of birth, addresses) so there's something realistic for the de-identification step to actually work on.
+This builds a fake but plausible LA County Medi-Cal behavioral health cohort — ICD-10 F-code diagnoses, ED visit history, discharge planning details, social determinants of health, all drawn from distributions roughly matched to LA County's published demographics. It deliberately includes PHI-equivalent fields (names, MRNs, dates of birth, addresses) so there's something realistic for the de-identification step to actually work on.
 
 ### 2. HIPAA Safe Harbor de-identification (`src/deidentification.py`)
 
@@ -111,7 +111,7 @@ A logistic regression baseline for interpretability, and XGBoost as the primary 
 
 ### 5. Fairness audit (`src/fairness.py`)
 
-Performance broken out by race/ethnicity, preferred language, insurance type, and Service Planning Area — true positive rate, false positive rate, precision, ROC-AUC, demographic parity difference, and equalized odds difference. This is meant to align with LACDMH's Anti-Racism, Diversity, and Inclusion (ARDI) Strategic Plan.
+Performance broken out by race/ethnicity, preferred language, insurance type, and Service Planning Area — true positive rate, false positive rate, precision, ROC-AUC, demographic parity difference, and equalized odds difference. This is meant to align with LA County's Anti-Racism, Diversity, and Inclusion (ARDI) Strategic Plan.
 
 ---
 
@@ -119,7 +119,7 @@ Performance broken out by race/ethnicity, preferred language, insurance type, an
 
 **Why XGBoost instead of a neural net?** This is tabular clinical data with a fairly small number of structured features — gradient-boosted trees handle that better than deep learning does, and XGBoost supports exact SHAP computation, which matters a lot when a clinical team needs to understand *why* a model flagged someone. A model nobody can explain doesn't really belong in this kind of workflow.
 
-**Why Safe Harbor instead of Expert Determination?** Safe Harbor is what LACDMH and its data partners (InfoHub, CalAIM, IBHIS) already use. It's deterministic and auditable, and it doesn't require a statistician to sign off on every new data pull.
+**Why Safe Harbor instead of Expert Determination?** Safe Harbor is what LA County and its data partners (InfoHub, CalAIM, IBHIS) already use. It's deterministic and auditable, and it doesn't require a statistician to sign off on every new data pull.
 
 **Why keep the fairness audit separate from the SHAP analysis, instead of folding them together?** Because a model can produce SHAP explanations that look perfectly reasonable while still performing worse for certain subgroups. Keeping the equity audit as its own independent step means it can't quietly get absorbed into the explainability story.
 
@@ -131,9 +131,9 @@ The full governance write-up lives in [`HIPAA_GOVERNANCE.md`](./HIPAA_GOVERNANCE
 
 ---
 
-## How this connects to LACDMH's actual priorities
+## How this connects to LA County's actual priorities
 
-| LACDMH initiative | How this project relates |
+| LA County initiative | How this project relates |
 |---|---|
 | FUM Performance Improvement Project (QAPI 2025–2026) | Directly models this HEDIS measure |
 | Homelessness Prevention Unit predictive analytics | Same multi-factor risk stratification approach |
@@ -153,4 +153,4 @@ Python 3.11, pandas/numpy for data work, scikit-learn for the baseline model and
 
 ## A note on why I built it this way
 
-I wanted this to actually demonstrate HIPAA-aware healthcare data science, not just a generic classification demo with a health-sounding name attached to it. Every choice here — which HEDIS measure to model, which de-identification method to use, building the fairness audit around ARDI specifically — was grounded in publicly available LACDMH documentation, and is meant to mirror how the department's data science section would actually approach this problem.
+I wanted this to actually demonstrate HIPAA-aware healthcare data science, not just a generic classification demo with a health-sounding name attached to it. Every choice here — which HEDIS measure to model, which de-identification method to use, building the fairness audit around ARDI specifically — was grounded in publicly available LA County documentation, and is meant to mirror how the department's data science section would actually approach this problem.
