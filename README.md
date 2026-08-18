@@ -53,7 +53,7 @@ dmh-fum-risk-model/
     └── fairness_*.csv           ← disaggregated equity metrics
 ```
 
-Everything here is generated on the fly — there's no PHI, real or synthetic, sitting committed in this repo.
+Everything here is generated on the fly — there's no PHI, real or synthetic, actually physically committed in this repo.
 
 ---
 
