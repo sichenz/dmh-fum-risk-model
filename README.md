@@ -5,11 +5,9 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Data](https://img.shields.io/badge/data-synthetic%20only-orange)
 
-**Predicting post-crisis follow-up failure in a mental health population: a HIPAA-aware ML pipeline**
+**Predicting post-crisis follow-up failure in LA County's mental health population**
 
 > This is a reproducible pipeline that flags which mental health patients are unlikely to show up for their 7-day follow-up visit after an ED crisis — so care coordinators can reach out before that window closes instead of after.
->
-> I built it as a portfolio piece for the **LA County Department of Mental Health Data Scientist Supervisor** role (Exam b1765A).
 
 ---
 
@@ -17,7 +15,7 @@
 
 ➡️ **[Open the dashboard](https://dmh-fum-risk-model-hme9rttxfrvndwicmq6byz.streamlit.app/)**
 
-The first visit after the app wakes up takes a few seconds — it's generating a fresh synthetic cohort and training the model from scratch, not loading pre-baked results. After that first run it's cached for the session, so there's nothing to install and nothing to configure.
+The first visit after the app wakes up takes a few seconds — it's generating a fresh synthetic cohort and training the model from scratch, not loading pre-made results. After that first run it's cached for the session, so there's nothing to install and nothing to configure.
 
 ---
 
