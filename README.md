@@ -1,6 +1,6 @@
 # FUM Follow-Up Failure Risk Stratification Model
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/YOUR_USERNAME/dmh-fum-risk-model/main/streamlit_app.py)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)]([https://share.streamlit.io/YOUR_USERNAME/dmh-fum-risk-model/main/streamlit_app.py](https://dmh-fum-risk-model-hme9rttxfrvndwicmq6byz.streamlit.app/))
 ![Python](https://img.shields.io/badge/python-3.11-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Data](https://img.shields.io/badge/data-synthetic%20only-orange)
