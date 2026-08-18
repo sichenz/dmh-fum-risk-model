@@ -1,0 +1,32 @@
+# Generated at runtime — re-created on every Streamlit Cloud cold start
+data/raw/
+data/processed/
+data/interim/
+models/
+reports/figures/
+reports/fairness_*.csv
+reports/model_metrics.csv
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Environments
+.venv/
+venv/
+env/
+.env
+
+# Trained model binaries (saved to models/ at runtime)
+*.pkl
+*.joblib
+
+# OS
+.DS_Store
+Thumbs.db
