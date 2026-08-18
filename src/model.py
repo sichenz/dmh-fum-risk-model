@@ -189,7 +189,7 @@ def plot_roc_pr_curves(results: list, y_test, save_path: str = None):
 
     plt.tight_layout()
     if save_path:
-        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        plt.savefig(save_path, dpi=100, bbox_inches="tight")
         logger.info(f"Saved ROC/PR plot → {save_path}")
     plt.close()
 
@@ -224,7 +224,7 @@ def plot_shap_summary(shap_values, X_test: pd.DataFrame, save_path: str = None):
     plt.title("SHAP Feature Impact on Follow-Up Failure Prediction", fontsize=13, pad=15)
     plt.tight_layout()
     if save_path:
-        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        plt.savefig(save_path, dpi=100, bbox_inches="tight")
         logger.info(f"Saved SHAP summary → {save_path}")
     plt.close()
 
@@ -236,7 +236,7 @@ def plot_shap_bar(shap_values, X_test: pd.DataFrame, save_path: str = None):
     plt.title("Mean |SHAP Value| — Feature Importance for FUM Failure", fontsize=13, pad=15)
     plt.tight_layout()
     if save_path:
-        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        plt.savefig(save_path, dpi=100, bbox_inches="tight")
         logger.info(f"Saved SHAP bar chart → {save_path}")
     plt.close()
 
@@ -258,7 +258,7 @@ def plot_calibration(model, X_test, y_test, model_name: str, save_path: str = No
     ax.set_ylim([0, 1])
     plt.tight_layout()
     if save_path:
-        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        plt.savefig(save_path, dpi=100, bbox_inches="tight")
         logger.info(f"Saved calibration plot → {save_path}")
     plt.close()
 

@@ -49,8 +49,8 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
-        "Get help": "https://github.com/YOUR_USERNAME/dmh-fum-risk-model",
-        "Report a bug": "https://github.com/YOUR_USERNAME/dmh-fum-risk-model/issues",
+        "Get help": "https://github.com/sichenz/dmh-fum-risk-model",
+        "Report a bug": "https://github.com/sichenz/dmh-fum-risk-model/issues",
         "About": "Portfolio project for LACDMH Data Scientist Supervisor (Exam b1765A). Synthetic data only.",
     },
 )

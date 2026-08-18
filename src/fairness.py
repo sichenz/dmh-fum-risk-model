@@ -207,7 +207,7 @@ def plot_group_performance(
 
     plt.tight_layout()
     if save_path:
-        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        plt.savefig(save_path, dpi=100, bbox_inches="tight")
         logger.info(f"Saved equity plot → {save_path}")
     plt.close()
 
@@ -256,7 +256,7 @@ def plot_fairness_radar(summaries: dict, save_path: str = None):
                fontsize=12, fontweight="bold", pad=20)
     plt.tight_layout()
     if save_path:
-        plt.savefig(save_path, dpi=150, bbox_inches="tight")
+        plt.savefig(save_path, dpi=100, bbox_inches="tight")
         logger.info(f"Saved fairness summary table → {save_path}")
     plt.close()
 
