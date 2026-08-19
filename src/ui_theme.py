@@ -53,79 +53,69 @@ def inject_theme() -> None:
         <script>
         (function () {
           const doc = window.parent.document;
+          const STORAGE_KEY = "fum-sidebar-minimized";
+
+          // Persist minimize state across Streamlit reruns within the same tab
+          let minimized = false;
+          try { minimized = sessionStorage.getItem(STORAGE_KEY) === "1"; } catch(e) {}
 
           function sidebarEl() {
             return doc.querySelector('[data-testid="stSidebar"]');
           }
 
-          function isCollapsed() {
-            const sb = sidebarEl();
-            if (!sb) return false;
-            return sb.getAttribute("aria-expanded") === "false";
-          }
-
-          // Try to find Streamlit's native expand/collapse button across
-          // different Streamlit versions.
-          function nativeToggle() {
-            const selectors = [
-              '[data-testid="stExpandSidebarButton"]',
-              '[data-testid="stSidebarCollapsedControl"] button',
-              '[data-testid="stSidebarCollapsedControl"]',
-              '[data-testid="collapsedControl"] button',
-              '[data-testid="collapsedControl"]',
-              '[data-testid="stSidebarCollapseButton"] button',
-              '[data-testid="stSidebarCollapseButton"]',
-            ];
-            for (const sel of selectors) {
-              const el = doc.querySelector(sel);
-              if (el) return el;
-            }
-            // Fallback: any button whose aria-label mentions "sidebar"
-            const candidates = doc.querySelectorAll(
-              'button[aria-label], [role="button"][aria-label]'
-            );
-            for (const el of candidates) {
-              const label = (el.getAttribute("aria-label") || "").toLowerCase();
-              if (label.indexOf("sidebar") !== -1) return el;
-            }
-            return null;
-          }
-
-          // Directly expand the sidebar by setting aria-expanded and
-          // clearing any inline styles that Streamlit may have applied.
-          function expandSidebar() {
+          // Force the sidebar to be expanded from Streamlit's perspective.
+          // We never want Streamlit to control the sidebar's visibility —
+          // we do it ourselves via the body class.
+          function forceExpand() {
             const sb = sidebarEl();
             if (!sb) return;
-            sb.setAttribute("aria-expanded", "true");
-            // Clear any inline transform/visibility that Streamlit sets
-            sb.style.removeProperty("transform");
-            sb.style.removeProperty("visibility");
+            if (sb.getAttribute("aria-expanded") === "false") {
+              sb.setAttribute("aria-expanded", "true");
+            }
+            // Clear any inline styles Streamlit applies during collapse
             sb.style.removeProperty("width");
             sb.style.removeProperty("min-width");
             sb.style.removeProperty("max-width");
+            sb.style.removeProperty("transform");
+            sb.style.removeProperty("visibility");
+            sb.style.removeProperty("display");
           }
 
-          // Collapse the sidebar. Try native toggle first; if that
-          // fails, set the attribute directly and let CSS handle it.
-          function collapseSidebar() {
+          // Apply our custom minimize/maximize visual state
+          function applyState() {
+            doc.body.classList.toggle("fum-sidebar-minimized", minimized);
+            try { sessionStorage.setItem(STORAGE_KEY, minimized ? "1" : "0"); } catch(e) {}
+            const btn = ensureBtn();
+            btn.classList.toggle("is-visible", minimized);
+            btn.setAttribute("aria-label", minimized ? "Open navigation" : "Close navigation");
+            btn.setAttribute("aria-hidden", minimized ? "false" : "true");
+          }
+
+          // Watch for Streamlit trying to collapse the sidebar via
+          // aria-expanded. When it does, we immediately reverse it and
+          // toggle our own minimize state instead.
+          let observerAttached = false;
+          function setupObserver() {
+            if (observerAttached) return;
             const sb = sidebarEl();
             if (!sb) return;
-            const native = nativeToggle();
-            if (native) {
-              native.click();
-              // Double-check after a tick
-              setTimeout(function () {
-                if (!isCollapsed()) {
-                  sb.setAttribute("aria-expanded", "false");
+            const observer = new MutationObserver(function (mutations) {
+              for (const m of mutations) {
+                if (m.attributeName === "aria-expanded" &&
+                    m.target.getAttribute("aria-expanded") === "false") {
+                  // Streamlit tried to collapse — reverse it immediately
+                  forceExpand();
+                  minimized = true;
+                  applyState();
                 }
-              }, 100);
-            } else {
-              sb.setAttribute("aria-expanded", "false");
-            }
+              }
+            });
+            observer.observe(sb, { attributes: true, attributeFilter: ["aria-expanded"] });
+            observerAttached = true;
           }
 
-          // Ensure our toggle button exists in document.body (not
-          // inside the sidebar or an iframe), so it survives collapse.
+          // Ensure our toggle button exists in document.body (not inside
+          // the sidebar or an iframe) so it always survives.
           function ensureBtn() {
             let btn = doc.getElementById("fum-nav-toggle");
             if (!btn) {
@@ -142,32 +132,26 @@ def inject_theme() -> None:
               btn.addEventListener("click", function (e) {
                 e.preventDefault();
                 e.stopPropagation();
-
-                if (isCollapsed()) {
-                  // Try native toggle first
-                  const native = nativeToggle();
-                  if (native) native.click();
-                  // Guaranteed fallback after a short delay
-                  setTimeout(function () {
-                    if (isCollapsed()) {
-                      expandSidebar();
-                    }
-                  }, 150);
-                } else {
-                  collapseSidebar();
-                }
+                minimized = !minimized;
+                if (!minimized) forceExpand();
+                applyState();
               });
             }
             return btn;
           }
 
           function tick() {
-            const btn = ensureBtn();
-            const collapsed = isCollapsed();
-            doc.body.classList.toggle("fum-sidebar-collapsed", collapsed);
-            btn.classList.toggle("is-visible", collapsed);
-            btn.setAttribute("aria-label", collapsed ? "Open navigation" : "Close navigation");
-            btn.setAttribute("aria-hidden", collapsed ? "false" : "true");
+            // Safety net: if Streamlit somehow collapsed the sidebar
+            // between observer events, reverse it immediately.
+            const sb = sidebarEl();
+            if (sb && sb.getAttribute("aria-expanded") === "false") {
+              forceExpand();
+              if (!minimized) {
+                minimized = true;
+              }
+            }
+            setupObserver();
+            applyState();
           }
 
           setInterval(tick, 200);
