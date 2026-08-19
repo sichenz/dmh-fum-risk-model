@@ -42,24 +42,13 @@ html, body, [class*="css"], [data-testid="stAppViewContainer"],
     var(--bg);
 }
 
-/* Do not transform the app shell — Chrome then clips position:fixed controls */
-.stApp,
-[data-testid="stAppViewContainer"],
-[data-testid="stHeader"],
-[data-testid="stToolbar"] {
-  transform: none !important;
-  filter: none !important;
-  contain: none !important;
-  clip-path: none !important;
-}
-
 [data-testid="stHeader"] {
   background: transparent !important;
-  min-height: 3.5rem;
+  min-height: 0;
   overflow: visible !important;
 }
 
-/* Hide chrome only. Never hide stToolbar — it owns the native reopen control. */
+/* Hide chrome only — stToolbar must stay, it owns the reopen control */
 [data-testid="stDecoration"],
 [data-testid="stStatusWidget"],
 #MainMenu,
@@ -76,51 +65,30 @@ footer,
   visibility: visible !important;
   opacity: 1 !important;
   height: auto !important;
-  overflow: visible !important;
   background: transparent !important;
 }
 
-[data-testid="stExpandSidebarButton"],
-[data-testid="stSidebarCollapsedControl"],
-[data-testid="collapsedControl"] {
+[data-testid="stExpandSidebarButton"] {
   display: inline-flex !important;
   visibility: visible !important;
   opacity: 1 !important;
   pointer-events: auto !important;
+  position: fixed !important;
+  top: 0.85rem;
+  left: 0.85rem;
+  z-index: 2147483647 !important;
+  width: 40px !important;
+  height: 40px !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 11px !important;
+  color: var(--ink) !important;
+  box-shadow: 0 8px 22px -14px rgba(20, 19, 17, 0.45);
 }
 
 [data-testid="stSidebarCollapseButton"] {
   display: flex !important;
   visibility: visible !important;
-}
-
-/* Our own reopen control — attached to document.body, so Chrome cannot clip it */
-.fum-nav-toggle {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  position: fixed;
-  top: 14px;
-  left: 14px;
-  z-index: 2147483647;
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border-radius: 11px;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--ink);
-  box-shadow: 0 8px 22px -14px rgba(20, 19, 17, 0.45);
-  cursor: pointer;
-}
-.fum-nav-toggle.is-visible,
-body.fum-sidebar-collapsed .fum-nav-toggle {
-  display: flex !important;
-}
-
-/* If Streamlit zeros the sidebar width, keep a sliver so it is not gone */
-section[data-testid="stSidebar"][aria-expanded="false"] {
-  min-width: 0 !important;
 }
 
 .block-container {
@@ -795,14 +763,8 @@ section[data-testid="stSidebar"] [data-testid="stElementContainer"] label {
   .hero h1 { max-width: 14ch; }
 }
 
-/* Shrink the helper iframe without display:none so Chrome still runs its script */
-iframe[height="1"] {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-  border: 0 !important;
+iframe[height="0"] {
+  display: none !important;
 }
 
 @media (max-width: 640px) {
