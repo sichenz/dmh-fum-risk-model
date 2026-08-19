@@ -1,4 +1,4 @@
-# FUM Follow-Up Failure Risk Stratification Model
+# FUM Follow-Up Failure Risk Prediction Model
 
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://dmh-fum-risk-model-hme9rttxfrvndwicmq6byz.streamlit.app/)
 ![Python](https://img.shields.io/badge/python-3.11-blue)
@@ -30,7 +30,7 @@ Most FUM improvement work focuses on the process for everyone. This project take
 ## What's in here
 
 ```
-dmh-fum-risk-model/
+fum-risk-model/
 ├── run_pipeline.py              ← run this to execute everything locally
 ├── streamlit_app.py             ← entry point for the live dashboard
 ├── requirements.txt
@@ -60,8 +60,8 @@ Everything here is generated on the fly — there's no PHI, real or synthetic, a
 ## Running it yourself
 
 ```bash
-git clone https://github.com/sichenz/dmh-fum-risk-model.git
-cd dmh-fum-risk-model
+git clone https://github.com/sichenz/fum-risk-model.git
+cd fum-risk-model
 pip install -r requirements.txt
 python run_pipeline.py
 ```
