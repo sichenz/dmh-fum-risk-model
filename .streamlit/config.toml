@@ -1,15 +1,18 @@
 [theme]
-primaryColor         = "#2563EB"
-backgroundColor      = "#FFFFFF"
-secondaryBackgroundColor = "#F8FAFC"
-textColor            = "#1E293B"
-font                 = "sans serif"
+primaryColor = "#161513"
+backgroundColor = "#F3F0E8"
+secondaryBackgroundColor = "#FFFDF8"
+textColor = "#141311"
+font = "sans serif"
 
 [server]
-headless     = true
-port         = 8501
-enableCORS   = false
+headless = true
+port = 8501
+enableCORS = false
 enableXsrfProtection = true
 
 [browser]
 gatherUsageStats = false
+
+[client]
+toolbarMode = "minimal"
