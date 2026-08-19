@@ -109,6 +109,36 @@ def run_pipeline():
     }
 
 
+PAGES = [
+    "Overview",
+    "Outreach",
+    "Equity audit",
+    "Performance",
+    "Governance",
+    "About",
+]
+
+# Chrome first so the logo, nav, and threshold are visible while the
+# first-load pipeline is still generating / training.
+with st.sidebar:
+    render_brand()
+    st.markdown("---")
+    page = st.radio("Navigation", PAGES, label_visibility="collapsed")
+    st.markdown("---")
+    threshold = st.slider(
+        "Risk threshold",
+        min_value=0.30, max_value=0.80,
+        value=0.50, step=0.05,
+        help="Patients at or above this score are flagged for proactive outreach.",
+    )
+    st.caption(f"Score {threshold:.2f} and above is flagged for outreach.")
+    st.markdown("---")
+    sidebar_note(
+        "HEDIS FUM",
+        "7-day follow-up after an ED visit for mental illness. "
+        "Active PIP in the LA County QAPI Work Plan 2025–2026.",
+    )
+
 hero(
     "LA County · Behavioral health analytics",
     "Turn missed follow-ups into closed care gaps.",
@@ -139,35 +169,9 @@ audit_df = pipeline["audit_df"]
 group_metrics = pipeline["group_metrics"]
 summaries = pipeline["summaries"]
 
-PAGES = [
-    "Overview",
-    "Outreach",
-    "Equity audit",
-    "Performance",
-    "Governance",
-    "About",
-]
-
-with st.sidebar:
-    render_brand()
-    st.markdown("---")
-    page = st.radio("Navigation", PAGES, label_visibility="collapsed")
-    st.markdown("---")
-    threshold = st.slider(
-        "Risk threshold",
-        min_value=0.30, max_value=0.80,
-        value=0.50, step=0.05,
-        help="Patients at or above this score are flagged for proactive outreach.",
-    )
-    st.caption(f"Score {threshold:.2f} and above is flagged for outreach.")
-    st.markdown("---")
-    sidebar_note(
-        "HEDIS FUM",
-        "7-day follow-up after an ED visit for mental illness. "
-        "Active PIP in the LA County QAPI Work Plan 2025–2026.",
-    )
-    elapsed = pipeline.get("elapsed", 0)
-    if elapsed:
+elapsed = pipeline.get("elapsed", 0)
+if elapsed:
+    with st.sidebar:
         st.caption(f"Pipeline ran in {elapsed:.1f}s")
 
 

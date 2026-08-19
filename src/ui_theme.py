@@ -55,8 +55,8 @@ def configure_page(title: str = "FUM Risk Model") -> None:
         layout="wide",
         initial_sidebar_state="expanded",
         menu_items={
-            "Get help": "https://github.com/sichenz/dmh-fum-risk-model",
-            "Report a bug": "https://github.com/sichenz/dmh-fum-risk-model/issues",
+            "Get help": "https://github.com/sichenz/fum-risk-model",
+            "Report a bug": "https://github.com/sichenz/fum-risk-model/issues",
             "About": "Portfolio prototype for LA County behavioral health analytics. Synthetic data only.",
         },
     )
@@ -73,7 +73,7 @@ def brand_mark() -> str:
       </div>
       <div>
         <div class="brand-name">FUM Risk</div>
-        <div class="brand-sub">LA County DMH</div>
+        <div class="brand-sub">LA County</div>
       </div>
     </div>
     """

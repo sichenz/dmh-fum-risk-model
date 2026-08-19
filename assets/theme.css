@@ -56,7 +56,6 @@ html, body, [class*="css"], [data-testid="stAppViewContainer"],
 footer,
 .stDeployButton,
 .stAppDeployButton {
-  visibility: hidden;
   height: 0;
   display: none;
 }

@@ -73,27 +73,6 @@ def load_fairness(attr):
     return None
 
 
-hero(
-    "LA County · Behavioral health analytics",
-    "Turn missed follow-ups into closed care gaps.",
-    "Predict which patients will miss their 7-day visit after a mental-health "
-    "emergency discharge — so outreach teams can reach them first.",
-    [
-        "HIPAA Safe Harbor",
-        "45 CFR §164.514(b)",
-        "Synthetic cohort only",
-        "HEDIS FUM",
-    ],
-)
-
-if not os.path.exists("data/processed/patient_risk_scores.csv"):
-    banner(
-        "Pipeline output was not found. Generate the cohort and scores first:",
-        "warn",
-    )
-    st.code("python run_pipeline.py", language="bash")
-    st.stop()
-
 PAGES = [
     "Overview",
     "Outreach",
@@ -118,6 +97,27 @@ with st.sidebar:
         "HEDIS FUM",
         "7-day follow-up after an ED visit for mental illness. Low FUM rates are care gaps.",
     )
+    
+hero(
+    "LA County · Behavioral health analytics",
+    "Turn missed follow-ups into closed care gaps.",
+    "Predict which patients will miss their 7-day visit after a mental-health "
+    "emergency discharge — so outreach teams can reach them first.",
+    [
+        "HIPAA Safe Harbor",
+        "45 CFR §164.514(b)",
+        "Synthetic cohort only",
+        "HEDIS FUM",
+    ],
+)
+
+if not os.path.exists("data/processed/patient_risk_scores.csv"):
+    banner(
+        "Pipeline output was not found. Generate the cohort and scores first:",
+        "warn",
+    )
+    st.code("python run_pipeline.py", language="bash")
+    st.stop()
 
 risk_df = load_risk_scores()
 metrics_df = load_metrics()
