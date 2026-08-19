@@ -775,10 +775,6 @@ div[data-testid="stSidebarCollapsedControl"] {
   color: var(--muted) !important;
 }
 
-section[data-testid="stSidebar"] {
-  min-width: 0;
-}
-
 /* Streamlit 1.6x radio option wrappers */
 section[data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb="radio"],
 section[data-testid="stSidebar"] [data-testid="stElementContainer"] label {

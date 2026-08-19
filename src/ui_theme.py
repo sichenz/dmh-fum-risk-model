@@ -65,11 +65,37 @@ def inject_theme() -> None:
             return w < 40;
           }
           function nativeToggle() {
-            return doc.querySelector('[data-testid="stExpandSidebarButton"]')
+            // Streamlit has renamed this control's data-testid across
+            // releases (collapsedControl -> stSidebarCollapsedControl ->
+            // stExpandSidebarButton/stSidebarCollapseButton, and back again
+            // in later versions). Hardcoding one generation's names is why
+            // this used to silently stop working the moment the app was
+            // redeployed onto a newer Streamlit: the selector below matched
+            // nothing, the click had nowhere to go, and our overlay (sitting
+            // at the highest possible z-index) blocked the user from ever
+            // reaching the real control underneath by hand.
+            const byTestId = doc.querySelector('[data-testid="stExpandSidebarButton"]')
               || doc.querySelector('[data-testid="stSidebarCollapsedControl"] button')
+              || doc.querySelector('[data-testid="stSidebarCollapsedControl"]')
               || doc.querySelector('[data-testid="collapsedControl"] button')
+              || doc.querySelector('[data-testid="collapsedControl"]')
               || doc.querySelector('[data-testid="stSidebarCollapseButton"] button')
               || doc.querySelector('[data-testid="stSidebarCollapseButton"]');
+            if (byTestId) return byTestId;
+
+            // Version-proof fallback: Streamlit always gives this control an
+            // accessible label mentioning "sidebar" (e.g. "Open sidebar" /
+            // "Close sidebar" / "Expand sidebar"), even when the internal
+            // testid changes. Matching on that keeps the reopen button
+            // working across Streamlit upgrades without a code change.
+            const labelled = doc.querySelectorAll(
+              'button[aria-label], [role="button"][aria-label]'
+            );
+            for (const el of labelled) {
+              const label = (el.getAttribute("aria-label") || "").toLowerCase();
+              if (label.indexOf("sidebar") !== -1) return el;
+            }
+            return null;
           }
           function ensureBtn() {
             let btn = doc.getElementById("fum-nav-toggle");
@@ -87,8 +113,24 @@ def inject_theme() -> None:
               btn.addEventListener("click", function (e) {
                 e.preventDefault();
                 e.stopPropagation();
+                const wasCollapsed = isCollapsed();
                 const target = nativeToggle();
                 if (target) target.click();
+                // If the click didn't actually change anything (e.g. the
+                // matched element wasn't the real toggle), fall back to a
+                // full synthetic pointer/mouse sequence, since some
+                // Streamlit builds attach their handler to pointerdown
+                // rather than click.
+                setTimeout(function () {
+                  if (isCollapsed() === wasCollapsed) {
+                    const retryTarget = nativeToggle();
+                    if (retryTarget) {
+                      ["pointerdown", "mousedown", "mouseup", "click"].forEach(function (type) {
+                        retryTarget.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true }));
+                      });
+                    }
+                  }
+                }, 120);
               });
             }
             return btn;
