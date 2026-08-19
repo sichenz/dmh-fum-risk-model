@@ -158,6 +158,13 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Keep native controls usable when Streamlit changes its internal layout.
+_control_css_path = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "assets", "controls.css")
+)
+with open(_control_css_path, encoding="utf-8") as _control_css:
+    st.markdown(f"<style>{_control_css.read()}</style>", unsafe_allow_html=True)
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Data loading
