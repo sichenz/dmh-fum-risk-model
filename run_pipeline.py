@@ -1,8 +1,6 @@
 """
 run_pipeline.py
 ---------------
-Master orchestration script for the FUM Follow-Up Failure prediction pipeline.
-
 Runs all stages end-to-end:
   1. Synthetic data generation
   2. HIPAA Safe Harbor de-identification
