@@ -48,7 +48,7 @@ html, body, [class*="css"], [data-testid="stAppViewContainer"],
   overflow: visible !important;
 }
 
-/* Hide Streamlit chrome without hiding the sidebar open/close controls. */
+/* Hide Streamlit chrome — never the sidebar open/close control */
 [data-testid="stToolbar"],
 [data-testid="stDecoration"],
 [data-testid="stStatusWidget"],
@@ -61,11 +61,7 @@ footer,
   display: none;
 }
 
-/*
- * Keep the logo/expand control visible after the sidebar is collapsed.
- * Streamlit has used each of these test IDs in supported releases, so retain
- * all three selectors instead of relying on generated class names.
- */
+/* Reopen button after the sidebar is collapsed */
 [data-testid="stSidebarCollapsedControl"],
 [data-testid="collapsedControl"],
 [data-testid="stExpandSidebarButton"] {
@@ -82,7 +78,6 @@ footer,
 [data-testid="stSidebarCollapsedControl"] button,
 [data-testid="collapsedControl"] button,
 [data-testid="stExpandSidebarButton"],
-[data-testid="stSidebarCollapseButton"] button,
 [data-testid="stBaseButton-headerNoPadding"],
 [data-testid="stBaseButton-header"] {
   display: inline-flex !important;
