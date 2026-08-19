@@ -43,54 +43,21 @@ html, body, [class*="css"], [data-testid="stAppViewContainer"],
 }
 
 [data-testid="stHeader"] {
-  background: transparent !important;
-  height: 3.4rem;
-  overflow: visible !important;
+  background: transparent;
+  height: 2.75rem;
 }
 
-/* Hide Streamlit chrome — never the sidebar open/close control */
 [data-testid="stToolbar"],
 [data-testid="stDecoration"],
 [data-testid="stStatusWidget"],
 #MainMenu,
 footer,
 .stDeployButton,
-.stAppDeployButton {
+.stAppDeployButton,
+button[kind="header"] {
   visibility: hidden;
   height: 0;
   display: none;
-}
-
-/* Reopen button after the sidebar is collapsed */
-[data-testid="stSidebarCollapsedControl"],
-[data-testid="collapsedControl"],
-[data-testid="stExpandSidebarButton"] {
-  display: flex !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  position: fixed !important;
-  top: 0.85rem;
-  left: 0.85rem;
-  z-index: 2147483647 !important;
-}
-
-[data-testid="stSidebarCollapsedControl"] button,
-[data-testid="collapsedControl"] button,
-[data-testid="stExpandSidebarButton"],
-[data-testid="stBaseButton-headerNoPadding"],
-[data-testid="stBaseButton-header"] {
-  display: inline-flex !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  width: 38px !important;
-  height: 38px !important;
-  background: var(--surface) !important;
-  border: 1px solid var(--line) !important;
-  border-radius: 11px !important;
-  color: var(--ink) !important;
-  box-shadow: 0 8px 22px -14px rgba(20, 19, 17, 0.45);
 }
 
 .block-container {
@@ -733,7 +700,9 @@ blockquote {
 }
 
 div[data-testid="stSidebarCollapsedControl"] {
-  background: transparent;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
 }
 
 [data-testid="stImage"] img {
