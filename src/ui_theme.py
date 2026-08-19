@@ -32,6 +32,75 @@ def inject_theme() -> None:
     css_path = os.path.join(REPO_ROOT, "assets", "theme.css")
     with open(css_path, encoding="utf-8") as fh:
         st.markdown(f"<style>{fh.read()}</style>", unsafe_allow_html=True)
+    # Streamlit 1.6x mounts the reopen control inside stToolbar. If any
+    # parent is still hidden, force the chain visible and keep a fallback.
+    import streamlit.components.v1 as components
+
+    components.html(
+        """
+        <script>
+        (function () {
+          const doc = window.parent.document;
+          function reveal(el) {
+            if (!el) return;
+            el.style.setProperty("display", "flex", "important");
+            el.style.setProperty("visibility", "visible", "important");
+            el.style.setProperty("opacity", "1", "important");
+            el.style.setProperty("pointer-events", "auto", "important");
+            el.style.setProperty("height", "auto", "important");
+          }
+          function visible(el) {
+            if (!el) return false;
+            const r = el.getBoundingClientRect();
+            const st = doc.defaultView.getComputedStyle(el);
+            return r.width > 0 && r.height > 0 && st.visibility !== "hidden" && st.display !== "none";
+          }
+          function tick() {
+            const expand = doc.querySelector('[data-testid="stExpandSidebarButton"]');
+            if (expand) {
+              let n = expand;
+              while (n && n !== doc.body) {
+                reveal(n);
+                const id = n.getAttribute && n.getAttribute("data-testid");
+                if (id === "stHeader" || id === "stToolbar") break;
+                n = n.parentElement;
+              }
+              expand.style.setProperty("position", "fixed", "important");
+              expand.style.setProperty("top", "14px", "important");
+              expand.style.setProperty("left", "14px", "important");
+              expand.style.setProperty("z-index", "2147483647", "important");
+              const fallback = doc.getElementById("fum-sidebar-reopen");
+              if (fallback) fallback.remove();
+              return;
+            }
+            const sidebar = doc.querySelector('[data-testid="stSidebar"]');
+            const collapsed = sidebar && sidebar.getAttribute("aria-expanded") === "false";
+            if (!collapsed) {
+              const fallback = doc.getElementById("fum-sidebar-reopen");
+              if (fallback) fallback.remove();
+              return;
+            }
+            if (doc.getElementById("fum-sidebar-reopen")) return;
+            const btn = doc.createElement("button");
+            btn.id = "fum-sidebar-reopen";
+            btn.type = "button";
+            btn.setAttribute("aria-label", "Open sidebar");
+            btn.style.cssText = "position:fixed;top:14px;left:14px;z-index:2147483647;width:40px;height:40px;border-radius:11px;border:1px solid #e3ddd1;background:#fffdf8;cursor:pointer;box-shadow:0 8px 22px -14px rgba(20,19,17,.45);";
+            btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 5h12M3 9h12M3 13h12" stroke="#141311" stroke-width="1.6" stroke-linecap="round"/></svg>';
+            btn.onclick = function () {
+              const target = doc.querySelector('[data-testid="stExpandSidebarButton"]');
+              if (target) target.click();
+            };
+            doc.body.appendChild(btn);
+          }
+          setInterval(tick, 250);
+          tick();
+        })();
+        </script>
+        """,
+        height=0,
+        width=0,
+    )
 
 
 def _e(value) -> str:
@@ -55,8 +124,8 @@ def configure_page(title: str = "FUM Risk Model") -> None:
         layout="wide",
         initial_sidebar_state="expanded",
         menu_items={
-            "Get help": "https://github.com/sichenz/fum-risk-model",
-            "Report a bug": "https://github.com/sichenz/fum-risk-model/issues",
+            "Get help": "https://github.com/sichenz/dmh-fum-risk-model",
+            "Report a bug": "https://github.com/sichenz/dmh-fum-risk-model/issues",
             "About": "Portfolio prototype for LA County behavioral health analytics. Synthetic data only.",
         },
     )
@@ -73,7 +142,7 @@ def brand_mark() -> str:
       </div>
       <div>
         <div class="brand-name">FUM Risk</div>
-        <div class="brand-sub">LA County</div>
+        <div class="brand-sub">LA County DMH</div>
       </div>
     </div>
     """

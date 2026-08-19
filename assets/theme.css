@@ -44,27 +44,32 @@ html, body, [class*="css"], [data-testid="stAppViewContainer"],
 
 [data-testid="stHeader"] {
   background: transparent !important;
-  height: 3.4rem;
+  min-height: 0;
   overflow: visible !important;
 }
 
-/* Hide Streamlit chrome — never the sidebar open/close control */
-[data-testid="stToolbar"],
+/* Hide chrome only — stToolbar must stay, it owns the reopen control */
 [data-testid="stDecoration"],
 [data-testid="stStatusWidget"],
 #MainMenu,
 footer,
 .stDeployButton,
 .stAppDeployButton {
-  height: 0;
-  display: none;
+  visibility: hidden !important;
+  height: 0 !important;
+  display: none !important;
 }
 
-/* Reopen button after the sidebar is collapsed */
-[data-testid="stSidebarCollapsedControl"],
-[data-testid="collapsedControl"],
-[data-testid="stExpandSidebarButton"] {
+[data-testid="stToolbar"] {
   display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  background: transparent !important;
+}
+
+[data-testid="stExpandSidebarButton"] {
+  display: inline-flex !important;
   visibility: visible !important;
   opacity: 1 !important;
   pointer-events: auto !important;
@@ -72,24 +77,18 @@ footer,
   top: 0.85rem;
   left: 0.85rem;
   z-index: 2147483647 !important;
-}
-
-[data-testid="stSidebarCollapsedControl"] button,
-[data-testid="collapsedControl"] button,
-[data-testid="stExpandSidebarButton"],
-[data-testid="stBaseButton-headerNoPadding"],
-[data-testid="stBaseButton-header"] {
-  display: inline-flex !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  pointer-events: auto !important;
-  width: 38px !important;
-  height: 38px !important;
+  width: 40px !important;
+  height: 40px !important;
   background: var(--surface) !important;
   border: 1px solid var(--line) !important;
   border-radius: 11px !important;
   color: var(--ink) !important;
   box-shadow: 0 8px 22px -14px rgba(20, 19, 17, 0.45);
+}
+
+[data-testid="stSidebarCollapseButton"] {
+  display: flex !important;
+  visibility: visible !important;
 }
 
 .block-container {
@@ -732,7 +731,8 @@ blockquote {
 }
 
 div[data-testid="stSidebarCollapsedControl"] {
-  background: transparent;
+  display: flex !important;
+  visibility: visible !important;
 }
 
 [data-testid="stImage"] img {
@@ -744,7 +744,7 @@ div[data-testid="stSidebarCollapsedControl"] {
 }
 
 section[data-testid="stSidebar"] {
-  min-width: 248px;
+  min-width: 0;
 }
 
 /* Streamlit 1.6x radio option wrappers */
@@ -761,6 +761,10 @@ section[data-testid="stSidebar"] [data-testid="stElementContainer"] label {
     padding: 0.6rem 0 1.1rem;
   }
   .hero h1 { max-width: 14ch; }
+}
+
+iframe[height="0"] {
+  display: none !important;
 }
 
 @media (max-width: 640px) {
