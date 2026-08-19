@@ -118,9 +118,26 @@ body.fum-sidebar-collapsed .fum-nav-toggle {
   display: flex !important;
 }
 
-/* If Streamlit zeros the sidebar width, keep a sliver so it is not gone */
+/* When collapsed, slide the sidebar offscreen instead of removing it.
+   This keeps the element in the DOM so our toggle can bring it back. */
+section[data-testid="stSidebar"] {
+  transition: transform 0.25s ease, visibility 0.25s ease !important;
+}
 section[data-testid="stSidebar"][aria-expanded="false"] {
+  transform: translateX(-100%) !important;
+  visibility: hidden !important;
   min-width: 0 !important;
+  /* Keep it in flow so the DOM structure isn't destroyed */
+  position: fixed !important;
+  height: 100vh !important;
+  z-index: 999999 !important;
+}
+/* When expanded (either natively or via our forceOpen), ensure it's visible */
+section[data-testid="stSidebar"][aria-expanded="true"] {
+  transform: translateX(0) !important;
+  visibility: visible !important;
+  position: relative !important;
+  z-index: 999999 !important;
 }
 
 .block-container {

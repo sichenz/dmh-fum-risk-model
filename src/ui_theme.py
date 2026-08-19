@@ -54,97 +54,78 @@ def inject_theme() -> None:
         (function () {
           const doc = window.parent.document;
 
-          // Once true, we are holding the sidebar open ourselves (see
-          // forceOpen below) rather than trusting Streamlit's own layout.
-          let forcedOpen = false;
-          // Last known expanded width, captured live so our forced-open
-          // fallback restores the sidebar to its real width instead of a
-          // guessed constant.
-          let lastKnownWidth = null;
-
           function sidebarEl() {
             return doc.querySelector('[data-testid="stSidebar"]');
           }
+
           function isCollapsed() {
             const sb = sidebarEl();
             if (!sb) return false;
-            if (forcedOpen) return false;
-            if (sb.getAttribute("aria-expanded") === "false") return true;
-            const w = sb.getBoundingClientRect().width;
-            return w < 40;
+            return sb.getAttribute("aria-expanded") === "false";
           }
-          function captureWidth() {
-            const sb = sidebarEl();
-            if (!sb) return;
-            const w = sb.getBoundingClientRect().width;
-            if (w >= 40) lastKnownWidth = Math.round(w) + "px";
-          }
-          // Guaranteed fallback: force the sidebar open by directly
-          // overriding its own inline style. This never depends on
-          // Streamlit's internal markup or button testids, so — unlike
-          // nativeToggle() below — it cannot be broken by a future
-          // Streamlit upgrade renaming or hiding its reopen control.
-          // Inline styles beat any stylesheet rule (including our own
-          // !important ones), so this always wins the cascade.
-          function forceOpen() {
-            const sb = sidebarEl();
-            if (!sb) return;
-            const width = lastKnownWidth || "21rem";
-            sb.style.setProperty("width", width, "important");
-            sb.style.setProperty("min-width", width, "important");
-            sb.style.setProperty("max-width", width, "important");
-            sb.style.setProperty("transform", "none", "important");
-            sb.style.setProperty("visibility", "visible", "important");
-            sb.style.removeProperty("display");
-            sb.setAttribute("aria-expanded", "true");
-            forcedOpen = true;
-          }
-          // Hand control back to Streamlit once the user asks to collapse
-          // again, so we don't fight its own layout unnecessarily.
-          function releaseForce() {
-            const sb = sidebarEl();
-            if (sb) {
-              sb.style.removeProperty("width");
-              sb.style.removeProperty("min-width");
-              sb.style.removeProperty("max-width");
-              sb.style.removeProperty("transform");
-              sb.style.removeProperty("visibility");
-            }
-            forcedOpen = false;
-          }
-          function nativeToggle() {
-            // Streamlit has renamed this control's data-testid across
-            // releases (collapsedControl -> stSidebarCollapsedControl ->
-            // stExpandSidebarButton/stSidebarCollapseButton, and back again
-            // in later versions). Hardcoding one generation's names is why
-            // this used to silently stop working the moment the app was
-            // redeployed onto a newer Streamlit: the selector below matched
-            // nothing, the click had nowhere to go, and our overlay (sitting
-            // at the highest possible z-index) blocked the user from ever
-            // reaching the real control underneath by hand.
-            const byTestId = doc.querySelector('[data-testid="stExpandSidebarButton"]')
-              || doc.querySelector('[data-testid="stSidebarCollapsedControl"] button')
-              || doc.querySelector('[data-testid="stSidebarCollapsedControl"]')
-              || doc.querySelector('[data-testid="collapsedControl"] button')
-              || doc.querySelector('[data-testid="collapsedControl"]')
-              || doc.querySelector('[data-testid="stSidebarCollapseButton"] button')
-              || doc.querySelector('[data-testid="stSidebarCollapseButton"]');
-            if (byTestId) return byTestId;
 
-            // Version-proof fallback: Streamlit always gives this control an
-            // accessible label mentioning "sidebar" (e.g. "Open sidebar" /
-            // "Close sidebar" / "Expand sidebar"), even when the internal
-            // testid changes. Matching on that keeps the reopen button
-            // working across Streamlit upgrades without a code change.
-            const labelled = doc.querySelectorAll(
+          // Try to find Streamlit's native expand/collapse button across
+          // different Streamlit versions.
+          function nativeToggle() {
+            const selectors = [
+              '[data-testid="stExpandSidebarButton"]',
+              '[data-testid="stSidebarCollapsedControl"] button',
+              '[data-testid="stSidebarCollapsedControl"]',
+              '[data-testid="collapsedControl"] button',
+              '[data-testid="collapsedControl"]',
+              '[data-testid="stSidebarCollapseButton"] button',
+              '[data-testid="stSidebarCollapseButton"]',
+            ];
+            for (const sel of selectors) {
+              const el = doc.querySelector(sel);
+              if (el) return el;
+            }
+            // Fallback: any button whose aria-label mentions "sidebar"
+            const candidates = doc.querySelectorAll(
               'button[aria-label], [role="button"][aria-label]'
             );
-            for (const el of labelled) {
+            for (const el of candidates) {
               const label = (el.getAttribute("aria-label") || "").toLowerCase();
               if (label.indexOf("sidebar") !== -1) return el;
             }
             return null;
           }
+
+          // Directly expand the sidebar by setting aria-expanded and
+          // clearing any inline styles that Streamlit may have applied.
+          function expandSidebar() {
+            const sb = sidebarEl();
+            if (!sb) return;
+            sb.setAttribute("aria-expanded", "true");
+            // Clear any inline transform/visibility that Streamlit sets
+            sb.style.removeProperty("transform");
+            sb.style.removeProperty("visibility");
+            sb.style.removeProperty("width");
+            sb.style.removeProperty("min-width");
+            sb.style.removeProperty("max-width");
+          }
+
+          // Collapse the sidebar. Try native toggle first; if that
+          // fails, set the attribute directly and let CSS handle it.
+          function collapseSidebar() {
+            const sb = sidebarEl();
+            if (!sb) return;
+            const native = nativeToggle();
+            if (native) {
+              native.click();
+              // Double-check after a tick
+              setTimeout(function () {
+                if (!isCollapsed()) {
+                  sb.setAttribute("aria-expanded", "false");
+                }
+              }, 100);
+            } else {
+              sb.setAttribute("aria-expanded", "false");
+            }
+          }
+
+          // Ensure our toggle button exists in document.body (not
+          // inside the sidebar or an iframe), so it survives collapse.
           function ensureBtn() {
             let btn = doc.getElementById("fum-nav-toggle");
             if (!btn) {
@@ -162,65 +143,33 @@ def inject_theme() -> None:
                 e.preventDefault();
                 e.stopPropagation();
 
-                if (forcedOpen) {
-                  // We're already holding the sidebar open via the
-                  // fallback; this click means "close it". Hand control
-                  // back to Streamlit and let its own collapse button
-                  // (or the next tick) take it from here.
-                  releaseForce();
-                  const closeTarget = nativeToggle();
-                  if (closeTarget) closeTarget.click();
-                  return;
-                }
-
-                const wasCollapsed = isCollapsed();
-                const target = nativeToggle();
-                if (target) target.click();
-                // If the click didn't actually change anything (e.g. the
-                // matched element wasn't the real toggle), fall back to a
-                // full synthetic pointer/mouse sequence, since some
-                // Streamlit builds attach their handler to pointerdown
-                // rather than click.
-                setTimeout(function () {
-                  if (isCollapsed() === wasCollapsed) {
-                    const retryTarget = nativeToggle();
-                    if (retryTarget) {
-                      ["pointerdown", "mousedown", "mouseup", "click"].forEach(function (type) {
-                        retryTarget.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true }));
-                      });
-                    }
-                  }
-                  // Final guarantee: if Streamlit's own reopen control is
-                  // missing, renamed, or unclickable in this version, we
-                  // are not at its mercy — force the sidebar open
-                  // directly so it is never stuck hidden.
+                if (isCollapsed()) {
+                  // Try native toggle first
+                  const native = nativeToggle();
+                  if (native) native.click();
+                  // Guaranteed fallback after a short delay
                   setTimeout(function () {
-                    if (wasCollapsed && isCollapsed()) {
-                      forceOpen();
+                    if (isCollapsed()) {
+                      expandSidebar();
                     }
                   }, 150);
-                }, 120);
+                } else {
+                  collapseSidebar();
+                }
               });
             }
             return btn;
           }
+
           function tick() {
-            if (forcedOpen) {
-              // Re-assert our override every tick. Streamlit reruns
-              // (triggered by any widget interaction) re-render the
-              // sidebar and can silently wipe an inline style we set
-              // once, so we keep reapplying it rather than trusting it
-              // to stick.
-              forceOpen();
-            } else {
-              captureWidth();
-            }
             const btn = ensureBtn();
             const collapsed = isCollapsed();
             doc.body.classList.toggle("fum-sidebar-collapsed", collapsed);
             btn.classList.toggle("is-visible", collapsed);
+            btn.setAttribute("aria-label", collapsed ? "Open navigation" : "Close navigation");
             btn.setAttribute("aria-hidden", collapsed ? "false" : "true");
           }
+
           setInterval(tick, 200);
           tick();
         })();
