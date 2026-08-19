@@ -33,18 +33,6 @@ def inject_theme() -> None:
     with open(css_path, encoding="utf-8") as fh:
         st.markdown(f"<style>{fh.read()}</style>", unsafe_allow_html=True)
 
-    # Always-on control in the main document. Streamlit's native reopen
-    # button lives inside the header and Chrome clips it after deploy.
-    _html(
-        """
-        <button type="button" class="fum-nav-toggle" id="fum-nav-toggle" aria-label="Open navigation">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-            <path d="M3 5h12M3 9h12M3 13h12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-          </svg>
-        </button>
-        """
-    )
-
     import streamlit.components.v1 as components
 
     # Keep this iframe 1px tall so Chrome still executes the script.
@@ -53,104 +41,113 @@ def inject_theme() -> None:
         <script>
         (function () {
           const doc = window.parent.document;
-          const STORAGE_KEY = "fum-sidebar-minimized";
 
-          // Persist minimize state across Streamlit reruns within the same tab
-          let minimized = false;
-          try { minimized = sessionStorage.getItem(STORAGE_KEY) === "1"; } catch(e) {}
+          // Clean up stale sessionStorage key from a prior version that
+          // caused the sidebar to start hidden on every page load.
+          try { sessionStorage.removeItem("fum-sidebar-minimized"); } catch(e) {}
+
+          // Use a data attribute on <body> to persist minimize state across
+          // Streamlit reruns (the body element survives reruns). Unlike
+          // sessionStorage this resets on page refresh, so the sidebar
+          // always starts visible on a fresh load.
+          let minimized = doc.body.dataset.fumSidebarMin === "1";
+
+          // Grace period: let Streamlit finish its own initialisation
+          // before we start intercepting collapse events. Without this,
+          // Streamlit's startup can briefly set aria-expanded="false"
+          // and our code would interpret it as a user-initiated collapse.
+          const scriptStart = Date.now();
+          const GRACE_MS = 1000;
+          function pastGrace() { return Date.now() - scriptStart > GRACE_MS; }
 
           function sidebarEl() {
             return doc.querySelector('[data-testid="stSidebar"]');
           }
 
-          // Force the sidebar to be expanded from Streamlit's perspective.
-          // We never want Streamlit to control the sidebar's visibility —
-          // we do it ourselves via the body class.
+          // Force the sidebar to be "expanded" from Streamlit's perspective.
           function forceExpand() {
             const sb = sidebarEl();
             if (!sb) return;
-            if (sb.getAttribute("aria-expanded") === "false") {
-              sb.setAttribute("aria-expanded", "true");
-            }
-            // Clear any inline styles Streamlit applies during collapse
-            sb.style.removeProperty("width");
-            sb.style.removeProperty("min-width");
-            sb.style.removeProperty("max-width");
-            sb.style.removeProperty("transform");
-            sb.style.removeProperty("visibility");
-            sb.style.removeProperty("display");
+            sb.setAttribute("aria-expanded", "true");
+            // Clear every inline style Streamlit may have applied
+            ["width","min-width","max-width","transform",
+             "visibility","display"].forEach(function(p) {
+              sb.style.removeProperty(p);
+            });
           }
 
-          // Apply our custom minimize/maximize visual state
+          // Apply our visual minimize/maximize state via a body class.
           function applyState() {
             doc.body.classList.toggle("fum-sidebar-minimized", minimized);
-            try { sessionStorage.setItem(STORAGE_KEY, minimized ? "1" : "0"); } catch(e) {}
+            doc.body.dataset.fumSidebarMin = minimized ? "1" : "0";
             const btn = ensureBtn();
             btn.classList.toggle("is-visible", minimized);
-            btn.setAttribute("aria-label", minimized ? "Open navigation" : "Close navigation");
+            btn.setAttribute("aria-label",
+              minimized ? "Open navigation" : "Close navigation");
             btn.setAttribute("aria-hidden", minimized ? "false" : "true");
           }
 
-          // Watch for Streamlit trying to collapse the sidebar via
-          // aria-expanded. When it does, we immediately reverse it and
-          // toggle our own minimize state instead.
-          let observerAttached = false;
-          function setupObserver() {
-            if (observerAttached) return;
+          // After the grace period, attach a MutationObserver so that
+          // clicking Streamlit's native X/close button is caught
+          // instantly (instead of waiting up to 200ms for the next tick).
+          let obsReady = false;
+          function maybeSetupObserver() {
+            if (obsReady || !pastGrace()) return;
             const sb = sidebarEl();
             if (!sb) return;
-            const observer = new MutationObserver(function (mutations) {
+            // Disconnect any observer left by a previous Streamlit rerun
+            if (sb._fumObs) { try { sb._fumObs.disconnect(); } catch(e) {} }
+            const obs = new MutationObserver(function (mutations) {
               for (const m of mutations) {
                 if (m.attributeName === "aria-expanded" &&
                     m.target.getAttribute("aria-expanded") === "false") {
-                  // Streamlit tried to collapse — reverse it immediately
                   forceExpand();
                   minimized = true;
                   applyState();
                 }
               }
             });
-            observer.observe(sb, { attributes: true, attributeFilter: ["aria-expanded"] });
-            observerAttached = true;
+            obs.observe(sb, { attributes: true, attributeFilter: ["aria-expanded"] });
+            sb._fumObs = obs;
+            obsReady = true;
           }
 
-          // Ensure our toggle button exists in document.body (not inside
-          // the sidebar or an iframe) so it always survives.
+          // Ensure exactly one toggle button exists as a direct child of
+          // document.body. Using body.querySelector(":scope > …") avoids
+          // picking up duplicates that Streamlit creates in the content area.
           function ensureBtn() {
-            let btn = doc.getElementById("fum-nav-toggle");
-            if (!btn) {
-              btn = doc.createElement("button");
-              btn.id = "fum-nav-toggle";
-              btn.className = "fum-nav-toggle";
-              btn.type = "button";
-              btn.setAttribute("aria-label", "Open navigation");
-              btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 5h12M3 9h12M3 13h12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
-            }
-            if (btn.parentElement !== doc.body) doc.body.appendChild(btn);
-            if (!btn.dataset.bound) {
-              btn.dataset.bound = "1";
-              btn.addEventListener("click", function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                minimized = !minimized;
-                if (!minimized) forceExpand();
-                applyState();
-              });
-            }
+            var btn = doc.body.querySelector(":scope > .fum-nav-toggle");
+            if (btn) return btn;
+            // Remove any stale duplicates (e.g. from _html or prior reruns)
+            doc.querySelectorAll(".fum-nav-toggle").forEach(function(el) { el.remove(); });
+            btn = doc.createElement("button");
+            btn.id = "fum-nav-toggle";
+            btn.className = "fum-nav-toggle";
+            btn.type = "button";
+            btn.setAttribute("aria-label", "Open navigation");
+            btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M3 5h12M3 9h12M3 13h12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
+            doc.body.appendChild(btn);
+            btn.addEventListener("click", function (e) {
+              e.preventDefault();
+              e.stopPropagation();
+              minimized = !minimized;
+              if (!minimized) forceExpand();
+              applyState();
+            });
             return btn;
           }
 
           function tick() {
-            // Safety net: if Streamlit somehow collapsed the sidebar
-            // between observer events, reverse it immediately.
-            const sb = sidebarEl();
-            if (sb && sb.getAttribute("aria-expanded") === "false") {
-              forceExpand();
-              if (!minimized) {
+            maybeSetupObserver();
+            // Safety net (only after grace period): if Streamlit collapsed
+            // the sidebar between observer events, reverse it.
+            if (pastGrace()) {
+              var sb = sidebarEl();
+              if (sb && sb.getAttribute("aria-expanded") === "false") {
+                forceExpand();
                 minimized = true;
               }
             }
-            setupObserver();
             applyState();
           }
 
