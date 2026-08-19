@@ -43,21 +43,59 @@ html, body, [class*="css"], [data-testid="stAppViewContainer"],
 }
 
 [data-testid="stHeader"] {
-  background: transparent;
-  height: 2.75rem;
+  background: transparent !important;
+  height: 3.4rem;
+  overflow: visible !important;
 }
 
+/* Hide Streamlit chrome without hiding the sidebar open/close controls. */
 [data-testid="stToolbar"],
 [data-testid="stDecoration"],
 [data-testid="stStatusWidget"],
 #MainMenu,
 footer,
 .stDeployButton,
-.stAppDeployButton,
-button[kind="header"] {
+.stAppDeployButton {
   visibility: hidden;
   height: 0;
   display: none;
+}
+
+/*
+ * Keep the logo/expand control visible after the sidebar is collapsed.
+ * Streamlit has used each of these test IDs in supported releases, so retain
+ * all three selectors instead of relying on generated class names.
+ */
+[data-testid="stSidebarCollapsedControl"],
+[data-testid="collapsedControl"],
+[data-testid="stExpandSidebarButton"] {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  position: fixed !important;
+  top: 0.85rem;
+  left: 0.85rem;
+  z-index: 2147483647 !important;
+}
+
+[data-testid="stSidebarCollapsedControl"] button,
+[data-testid="collapsedControl"] button,
+[data-testid="stExpandSidebarButton"],
+[data-testid="stSidebarCollapseButton"] button,
+[data-testid="stBaseButton-headerNoPadding"],
+[data-testid="stBaseButton-header"] {
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  width: 38px !important;
+  height: 38px !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 11px !important;
+  color: var(--ink) !important;
+  box-shadow: 0 8px 22px -14px rgba(20, 19, 17, 0.45);
 }
 
 .block-container {
@@ -700,9 +738,7 @@ blockquote {
 }
 
 div[data-testid="stSidebarCollapsedControl"] {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 10px;
+  background: transparent;
 }
 
 [data-testid="stImage"] img {
