@@ -73,7 +73,7 @@ def brand_mark() -> str:
       </div>
       <div>
         <div class="brand-name">FUM Risk</div>
-        <div class="brand-sub">LA County DMH</div>
+        <div class="brand-sub">LA County Health</div>
       </div>
     </div>
     """
